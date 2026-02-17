@@ -31,19 +31,18 @@ This assignment uses exactly the following files (downloaded via Python in the n
 ## Repository Structure
 ```text
 .
-├── assignment1.ipynb
-├── app.py
+├── assignment1.ipynb        # Jupyter notebook (Parts 1, 2, 3 prototypes)
+├── app.py                   # Streamlit dashboard main page
 ├── pages/
-│   ├── 1_Overview.py
-│   ├── 2_Plotly_Charts.py
-│   └── 3_Altair_Interactive.py
+│   ├── 1_Overview.py        # Data overview, stats, column info, quality checks
+│   ├── 2_Visualizations.py  # All 5 interactive Plotly charts + filters
+│   └── 3_Upload_Data.py     # Upload your own CSV and build charts
 ├── data/
-│   ├── raw/          (downloaded files - not committed)
-│   └── processed/    (cleaned parquet - not committed)
+│   ├── raw/                 (downloaded files — not committed)
+│   └── processed/           (cleaned parquet — not committed)
 ├── requirements.txt
 ├── README.md
 └── .gitignore
-
 ```
 
 ## Setup Guide
@@ -62,6 +61,7 @@ source .venv/bin/activate
 ```
 
 ### 2) Install dependencies
+<u>N.B.</u> pip-26.0.1 is the pip version used & kernal Python 3.12.7 used
 ```bash
 pip install -r requirements.txt
 ```
