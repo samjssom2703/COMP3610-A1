@@ -47,15 +47,39 @@ def _download(url, dest):
 
 
 def _build_clean_dataset():
+    import gc
+    import pyarrow.parquet as pq
+    import pyarrow.compute as pc
+
     with st.spinner("First run — downloading raw data (~50 MB)…"):
         _download(TRIP_URL, TRIP_RAW)
         _download(ZONE_URL, ZONE_CSV)
     with st.spinner("Cleaning & engineering features — this may take a minute…"):
-        df = pd.read_parquet(TRIP_RAW)
+        # Read only needed columns to save memory
+        needed = [
+            "tpep_pickup_datetime", "tpep_dropoff_datetime",
+            "PULocationID", "DOLocationID", "passenger_count",
+            "trip_distance", "fare_amount", "tip_amount",
+            "total_amount", "payment_type", "VendorID", "RatecodeID",
+            "store_and_fwd_flag", "extra", "mta_tax", "tolls_amount",
+            "improvement_surcharge", "congestion_surcharge", "airport_fee",
+        ]
+        table = pq.read_table(TRIP_RAW, columns=needed)
+
+        # Filter January 2024 at the Arrow level before converting to pandas
+        pickup = table.column("tpep_pickup_datetime")
+        mask = pc.and_(
+            pc.greater_equal(pickup, pd.Timestamp("2024-01-01")),
+            pc.less(pickup, pd.Timestamp("2024-02-01")),
+        )
+        table = table.filter(mask)
+        df = table.to_pandas()
+        del table
+        gc.collect()
+
         df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
         df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
         df = df.dropna(subset=["tpep_pickup_datetime","tpep_dropoff_datetime","PULocationID","DOLocationID","fare_amount"])
-        df = df[(df["tpep_pickup_datetime"]>="2024-01-01")&(df["tpep_pickup_datetime"]<"2024-02-01")]
         df = df[df["tpep_dropoff_datetime"]>df["tpep_pickup_datetime"]]
         df = df[df["trip_distance"]>0]
         df = df[(df["fare_amount"]>0)&(df["fare_amount"]<=500)]
@@ -71,6 +95,8 @@ def _build_clean_dataset():
         df["tip_pct"] = np.where(df["fare_amount"]>0, (df["tip_amount"]/df["fare_amount"])*100, 0)
         os.makedirs(PROCESSED_DIR, exist_ok=True)
         df.to_parquet(CLEAN_PATH, index=False)
+        del df
+        gc.collect()
 
 
 @st.cache_data
