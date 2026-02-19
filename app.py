@@ -104,7 +104,7 @@ with col4:
     )
 
 with col5:
-    avg_dur = df["trip_duration_min"].mean()
+    avg_dur = df["trip_duration_minutes"].mean()
     st.metric(
         label="Avg. Trip Duration",
         value=f"{avg_dur:.1f} min",

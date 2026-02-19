@@ -6,9 +6,8 @@ st.set_page_config(page_title="Upload Data", layout="wide")
 
 st.title("Upload Other Data")
 st.markdown(
-    """
-    Got another dataset you want to poke around in?  
-    Drop a CSV below and build interactive charts on the fly.
+    """  
+    Drop another CSV file below.
     """
 )
 

@@ -34,9 +34,9 @@ This assignment uses exactly the following files (downloaded via Python in the n
 ├── assignment1.ipynb        # Jupyter notebook (Parts 1, 2, 3 prototypes)
 ├── app.py                   # Streamlit dashboard main page
 ├── pages/
-│   ├── 1_Overview.py        # Data overview, stats, column info, quality checks
-│   ├── 2_Visualizations.py  # All 5 interactive Plotly charts + filters
-│   └── 3_Upload_Data.py     # Upload your own CSV and build charts
+│   ├── 1-Overview.py        # Data overview, stats, column info, quality checks
+│   ├── 2-Visualizations.py  # All 5 interactive Plotly charts + filters
+│   └── 3-Upload_Data.py     # Upload your own CSV and build charts
 ├── data/
 │   ├── raw/                 (downloaded files — not committed)
 │   └── processed/           (cleaned parquet — not committed)
@@ -83,6 +83,11 @@ This will generate:
  ```bash 
  deactivate
  ```
+
+## Deployed Dashboard
+Local URL: http://localhost:8501
+Network URL: http://192.168.100.131:8501
+
 
 ## License
 This project is licensed under Samuel Soman, student at the University of the West Indies.

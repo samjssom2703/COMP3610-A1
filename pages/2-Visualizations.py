@@ -7,7 +7,7 @@ import os
 st.set_page_config(page_title="Visualisations", layout="wide")
 
 st.title("Visualisations Of The Data")
-st.markdown("Use the filters in the sidebar to slice and dice the data. Go wild.")
+st.markdown("Use the filters in the sidebar to segment different data by date, hour, and payment type. Each chart will update accordingly, so you can spot patterns across different slices of the data.")
 
 
 # Loading the data from the files
@@ -251,7 +251,7 @@ with tab4:
 # Heatmap which shows Trips by Day of Week × Hour
 with tab5:
     st.subheader("Trip Volume by Day of Week and Hour")
-    st.caption("Spot the patterns — when are taxis busiest?")
+    st.caption("Spot the patterns - when are taxis busiest?")
 
     DAY_ORDER = [
         "Monday", "Tuesday", "Wednesday", "Thursday",
@@ -263,8 +263,7 @@ with tab5:
         .size()
         .reset_index(name="trip_count")
         .pivot(index="pickup_day_of_week", columns="pickup_hour", values="trip_count")
-        .fillna(0)
-        .reindex(DAY_ORDER)
+        .reindex(index=DAY_ORDER, columns=range(24), fill_value=0)
     )
 
     fig5 = px.imshow(
@@ -289,5 +288,5 @@ with tab5:
 
     st.info(
         "**Pro tip:** Use the hour slider in the sidebar to zoom into rush hour "
-        "(e.g., 7–9 AM) or late night (10 PM–2 AM) and watch all charts update!"
+        "(e.g., 7–9 AM) or late night (10 PM–2 AM), you'll see that all charts update!"
     )

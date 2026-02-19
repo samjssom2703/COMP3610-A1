@@ -6,7 +6,7 @@ import os
 st.set_page_config(page_title="Data Overview", layout="wide")
 
 st.title("Data Overview")
-st.markdown("Let's see what we're working with here.")
+st.markdown("Shows you the basics of the dataset used, so you know what you're working with before looking at the visualisations.")
 
 
 @st.cache_data
@@ -59,8 +59,8 @@ with tab1:
                 "fare_amount",
                 "trip_distance",
                 "tip_amount",
-                "trip_duration_min",
-                "avg_speed_mph",
+                "trip_duration_minutes",
+                "trip_speed_mph",
             ]
             if c in numeric_cols
         ],
@@ -141,8 +141,8 @@ with tab3:
         "total_amount": "Everything added up",
         "congestion_surcharge": "Manhattan congestion fee",
         "airport_fee": "For airport pickups",
-        "trip_duration_min": "[Derived] Trip length in minutes",
-        "avg_speed_mph": "[Derived] Distance ÷ duration in hours",
+        "trip_duration_minutes": "[Derived] Trip length in minutes",
+        "trip_speed_mph": "[Derived] Distance ÷ duration in hours",
         "pickup_hour": "[Derived] Hour of pickup (0–23)",
         "pickup_day_of_week": "[Derived] Day name (Monday–Sunday)",
         "pickup_date": "[Derived] Just the date part",
@@ -201,29 +201,29 @@ with col2:
             "fare_amount",
             "trip_distance",
             "tip_amount",
-            "trip_duration_min",
-            "avg_speed_mph",
+            "trip_duration_minutes",
+            "trip_speed_mph",
         ],
         "Min": [
             f"${df['fare_amount'].min():.2f}",
             f"{df['trip_distance'].min():.2f} mi",
             f"${df['tip_amount'].min():.2f}",
-            f"{df['trip_duration_min'].min():.1f} min",
-            f"{df['avg_speed_mph'].min():.1f} mph",
+            f"{df['trip_duration_minutes'].min():.1f} min",
+            f"{df['trip_speed_mph'].min():.1f} mph",
         ],
         "Max": [
             f"${df['fare_amount'].max():.2f}",
             f"{df['trip_distance'].max():.2f} mi",
             f"${df['tip_amount'].max():.2f}",
-            f"{df['trip_duration_min'].max():.1f} min",
-            f"{df['avg_speed_mph'].max():.1f} mph",
+            f"{df['trip_duration_minutes'].max():.1f} min",
+            f"{df['trip_speed_mph'].max():.1f} mph",
         ],
         "Mean": [
             f"${df['fare_amount'].mean():.2f}",
             f"{df['trip_distance'].mean():.2f} mi",
             f"${df['tip_amount'].mean():.2f}",
-            f"{df['trip_duration_min'].mean():.1f} min",
-            f"{df['avg_speed_mph'].mean():.1f} mph",
+            f"{df['trip_duration_minutes'].mean():.1f} min",
+            f"{df['trip_speed_mph'].mean():.1f} mph",
         ],
     }
     st.dataframe(pd.DataFrame(ranges_data), use_container_width=True, hide_index=True)
