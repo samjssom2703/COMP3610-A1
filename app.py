@@ -48,9 +48,7 @@ def _download(url, dest):
 
 def _build_clean_dataset():
     import gc
-    from datetime import datetime
     import pyarrow.parquet as pq
-    import pyarrow.compute as pc
 
     with st.spinner("First run — downloading raw data (~50 MB)…"):
         _download(TRIP_URL, TRIP_RAW)
@@ -85,20 +83,13 @@ def _build_clean_dataset():
             raise RuntimeError(f"Required columns missing in source parquet: {missing_required}")
 
         table = pq.read_table(TRIP_RAW, columns=selected_cols)
-
-        # Filter January 2024 at the Arrow level before converting to pandas
-        pickup = table.column("tpep_pickup_datetime")
-        mask = pc.and_(
-            pc.greater_equal(pickup, pc.scalar(datetime(2024, 1, 1))),
-            pc.less(pickup, pc.scalar(datetime(2024, 2, 1))),
-        )
-        table = table.filter(mask)
         df = table.to_pandas()
         del table
         gc.collect()
 
         df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
         df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
+        df = df[(df["tpep_pickup_datetime"] >= "2024-01-01") & (df["tpep_pickup_datetime"] < "2024-02-01")]
         df = df.dropna(subset=["tpep_pickup_datetime","tpep_dropoff_datetime","PULocationID","DOLocationID","fare_amount"])
         df = df[df["tpep_dropoff_datetime"]>df["tpep_pickup_datetime"]]
         df = df[df["trip_distance"]>0]
