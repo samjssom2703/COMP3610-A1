@@ -90,7 +90,17 @@ def _build_clean_dataset():
 def load_data():
     if not os.path.exists(CLEAN_PATH):
         _build_clean_dataset()
-    df = pd.read_parquet(CLEAN_PATH)
+    required_columns = [
+        "tpep_pickup_datetime",
+        "tpep_dropoff_datetime",
+        "PULocationID",
+        "payment_type",
+        "fare_amount",
+        "trip_distance",
+        "pickup_hour",
+        "pickup_day_of_week",
+    ]
+    df = pd.read_parquet(CLEAN_PATH, columns=required_columns)
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
@@ -255,10 +265,18 @@ with tab3:
     st.caption("How far do people actually go in a NYC taxi?")
 
     # filter to distances <= 30 miles 
-    dist_df = filtered[filtered["trip_distance"] <= 30]
+    dist_df = filtered[filtered["trip_distance"] <= 30][["trip_distance"]].dropna()
+
+    if dist_df.empty:
+        st.warning("No trip distance data available for the selected filters.")
+        st.stop()
+
+    max_points = 200000
+    plot_dist = dist_df.sample(max_points, random_state=42) if len(dist_df) > max_points else dist_df
+    median_distance = dist_df["trip_distance"].median()
 
     fig3 = px.histogram(
-        dist_df,
+        plot_dist,
         x="trip_distance",
         nbins=60,
         title="Distribution of Trip Distances",
@@ -266,10 +284,10 @@ with tab3:
         color_discrete_sequence=["#636EFA"],
     )
     fig3.add_vline(
-        x=dist_df["trip_distance"].median(),
+        x=median_distance,
         line_dash="dash",
         line_color="red",
-        annotation_text=f"Median: {dist_df['trip_distance'].median():.2f} mi",
+        annotation_text=f"Median: {median_distance:.2f} mi",
     )
     fig3.update_layout(height=450)
     st.plotly_chart(fig3, use_container_width=True)
