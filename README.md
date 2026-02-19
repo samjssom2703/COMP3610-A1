@@ -85,9 +85,18 @@ This will generate:
  ```
 
 ## Deployed Dashboard
+**[Live Dashboard Link]**: https://samjssom2703-comp3610-a1-app-jnigrn.streamlit.app/
 Network URL: http://192.168.100.131:8501
 
 
+## AI Usage Disclosure 
+
+AI was used:
+- Mainly to debug the Streamlit Application Deployment - see github repo commits
+- Also used for recommendations in code segments to fulfil the requirements
+- For assistance with GitHub committing and deleting files
+
 ## License
 This project is licensed under Samuel Soman, student at the University of the West Indies.
+
 
