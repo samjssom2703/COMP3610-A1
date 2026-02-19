@@ -1,7 +1,16 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import requests
 import os
+
+TRIP_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet"
+ZONE_URL = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
+RAW_DIR = os.path.join("data", "raw")
+PROCESSED_DIR = os.path.join("data", "processed")
+TRIP_RAW = os.path.join(RAW_DIR, "yellow_tripdata_2024-01.parquet")
+ZONE_CSV = os.path.join(RAW_DIR, "taxi_zone_lookup.csv")
+CLEAN_PATH = os.path.join(PROCESSED_DIR, "yellow_2024_01_clean.parquet")
 
 st.set_page_config(page_title="Data Overview", layout="wide")
 
@@ -9,17 +18,49 @@ st.title("Data Overview")
 st.markdown("Shows you the basics of the dataset used, so you know what you're working with before looking at the visualisations.")
 
 
+def _download(url, dest):
+    if os.path.exists(dest):
+        return
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    r = requests.get(url, stream=True)
+    r.raise_for_status()
+    with open(dest, "wb") as f:
+        for chunk in r.iter_content(8192):
+            f.write(chunk)
+
+
+def _build_clean_dataset():
+    with st.spinner("First run — downloading raw data (~50 MB)…"):
+        _download(TRIP_URL, TRIP_RAW)
+        _download(ZONE_URL, ZONE_CSV)
+    with st.spinner("Cleaning & engineering features — this may take a minute…"):
+        df = pd.read_parquet(TRIP_RAW)
+        df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
+        df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
+        df = df.dropna(subset=["tpep_pickup_datetime","tpep_dropoff_datetime","PULocationID","DOLocationID","fare_amount"])
+        df = df[(df["tpep_pickup_datetime"]>="2024-01-01")&(df["tpep_pickup_datetime"]<"2024-02-01")]
+        df = df[df["tpep_dropoff_datetime"]>df["tpep_pickup_datetime"]]
+        df = df[df["trip_distance"]>0]
+        df = df[(df["fare_amount"]>0)&(df["fare_amount"]<=500)]
+        df = df[df["total_amount"]>0]
+        df["trip_duration_minutes"] = (df["tpep_dropoff_datetime"]-df["tpep_pickup_datetime"]).dt.total_seconds()/60
+        df = df[(df["trip_distance"]<=200)&(df["trip_duration_minutes"]>=1)&(df["trip_duration_minutes"]<=300)]
+        df = df[(df["passenger_count"]>=1)&(df["passenger_count"]<=9)]
+        df["pickup_hour"] = df["tpep_pickup_datetime"].dt.hour
+        df["pickup_day_of_week"] = df["tpep_pickup_datetime"].dt.day_name()
+        df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
+        df["trip_speed_mph"] = np.where(df["trip_duration_minutes"]>0, df["trip_distance"]/(df["trip_duration_minutes"]/60), 0)
+        df.loc[df["trip_speed_mph"]>80,"trip_speed_mph"] = np.nan
+        df["tip_pct"] = np.where(df["fare_amount"]>0, (df["tip_amount"]/df["fare_amount"])*100, 0)
+        os.makedirs(PROCESSED_DIR, exist_ok=True)
+        df.to_parquet(CLEAN_PATH, index=False)
+
+
 @st.cache_data
 def load_data():
-    clean_path = os.path.join("data", "processed", "yellow_2024_01_clean.parquet")
-    if not os.path.exists(clean_path):
-        st.error(
-            "Cleaned dataset not found! "
-            "Run assignment1.ipynb first to generate data/processed/yellow_2024_01_clean.parquet"
-        )
-        st.stop()
-
-    df = pd.read_parquet(clean_path)
+    if not os.path.exists(CLEAN_PATH):
+        _build_clean_dataset()
+    df = pd.read_parquet(CLEAN_PATH)
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
