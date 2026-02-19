@@ -131,6 +131,11 @@ def load_zones():
 df = load_data()
 zone_df = load_zones()
 
+if "taxi_df" not in st.session_state:
+    st.session_state["taxi_df"] = df
+if "zone_df" not in st.session_state:
+    st.session_state["zone_df"] = zone_df
+
 
 st.markdown('<p class="main-header">NYC Yellow Taxi Trip Dashboard</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Exploring Yellow Taxi Data from January 2024</p>', unsafe_allow_html=True)

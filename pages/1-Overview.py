@@ -1,15 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import requests
 import os
 
-TRIP_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet"
-ZONE_URL = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
-RAW_DIR = os.path.join("data", "raw")
-PROCESSED_DIR = os.path.join("data", "processed")
-TRIP_RAW = os.path.join(RAW_DIR, "yellow_tripdata_2024-01.parquet")
-ZONE_CSV = os.path.join(RAW_DIR, "taxi_zone_lookup.csv")
 CLEAN_PATH = os.path.join("data", "processed", "yellow_2024_01_clean.parquet")
 
 st.set_page_config(page_title="Data Overview", layout="wide")
@@ -18,81 +11,18 @@ st.title("Data Overview")
 st.markdown("Shows you the basics of the dataset used, so you know what you're working with before looking at the visualisations.")
 
 
-def _download(url, dest):
-    if os.path.exists(dest):
-        return
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
-    response = requests.get(url, stream=True, timeout=60)
-    response.raise_for_status()
-    with open(dest, "wb") as file:
-        for chunk in response.iter_content(8192):
-            file.write(chunk)
-
-
-def _build_clean_dataset():
-    import gc
-    import pyarrow.parquet as pq
-
-    with st.spinner("Preparing dataset for first use…"):
-        _download(TRIP_URL, TRIP_RAW)
-        _download(ZONE_URL, ZONE_CSV)
-
-        needed = [
-            "tpep_pickup_datetime", "tpep_dropoff_datetime",
-            "PULocationID", "DOLocationID", "passenger_count",
-            "trip_distance", "fare_amount", "tip_amount",
-            "total_amount", "payment_type", "VendorID", "RatecodeID",
-            "store_and_fwd_flag", "extra", "mta_tax", "tolls_amount",
-            "improvement_surcharge", "congestion_surcharge", "airport_fee",
-        ]
-        available_cols = set(pq.ParquetFile(TRIP_RAW).schema_arrow.names)
-        selected_cols = [column for column in needed if column in available_cols]
-
-        required_cols = {
-            "tpep_pickup_datetime", "tpep_dropoff_datetime", "PULocationID", "DOLocationID",
-            "passenger_count", "trip_distance", "fare_amount", "tip_amount", "total_amount", "payment_type",
-        }
-        missing_required = sorted(required_cols - available_cols)
-        if missing_required:
-            raise RuntimeError(f"Required columns missing in source parquet: {missing_required}")
-
-        table = pq.read_table(TRIP_RAW, columns=selected_cols)
-        df = table.to_pandas()
-        del table
-        gc.collect()
-
-        df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
-        df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
-        df = df[(df["tpep_pickup_datetime"] >= "2024-01-01") & (df["tpep_pickup_datetime"] < "2024-02-01")]
-        df = df.dropna(subset=["tpep_pickup_datetime", "tpep_dropoff_datetime", "PULocationID", "DOLocationID", "fare_amount"])
-        df = df[df["tpep_dropoff_datetime"] > df["tpep_pickup_datetime"]]
-        df = df[df["trip_distance"] > 0]
-        df = df[(df["fare_amount"] > 0) & (df["fare_amount"] <= 500)]
-        df = df[df["total_amount"] > 0]
-        df["trip_duration_minutes"] = (df["tpep_dropoff_datetime"] - df["tpep_pickup_datetime"]).dt.total_seconds() / 60
-        df = df[(df["trip_distance"] <= 200) & (df["trip_duration_minutes"] >= 1) & (df["trip_duration_minutes"] <= 300)]
-        df = df[(df["passenger_count"] >= 1) & (df["passenger_count"] <= 9)]
-        df["pickup_hour"] = df["tpep_pickup_datetime"].dt.hour
-        df["pickup_day_of_week"] = df["tpep_pickup_datetime"].dt.day_name()
-        df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
-        df["trip_speed_mph"] = np.where(df["trip_duration_minutes"] > 0, df["trip_distance"] / (df["trip_duration_minutes"] / 60), 0)
-        df.loc[df["trip_speed_mph"] > 80, "trip_speed_mph"] = np.nan
-        df["tip_pct"] = np.where(df["fare_amount"] > 0, (df["tip_amount"] / df["fare_amount"]) * 100, 0)
-
-        os.makedirs(PROCESSED_DIR, exist_ok=True)
-        df.to_parquet(CLEAN_PATH, index=False)
-        del df
-        gc.collect()
-
-
 @st.cache_data
 def load_data():
+    if "taxi_df" in st.session_state:
+        return st.session_state["taxi_df"]
     if not os.path.exists(CLEAN_PATH):
-        _build_clean_dataset()
+        st.error("Dataset not ready yet. Open the Home page first to initialize data.")
+        st.stop()
     df = pd.read_parquet(CLEAN_PATH)
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
+    st.session_state["taxi_df"] = df
     return df
 
 
