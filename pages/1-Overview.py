@@ -13,16 +13,27 @@ st.markdown("Shows you the basics of the dataset used, so you know what you're w
 
 @st.cache_data
 def load_data():
-    if "taxi_df" in st.session_state:
-        return st.session_state["taxi_df"]
     if not os.path.exists(CLEAN_PATH):
         st.error("Dataset not ready yet. Open the Home page first to initialize data.")
         st.stop()
-    df = pd.read_parquet(CLEAN_PATH)
+    required_columns = [
+        "tpep_pickup_datetime",
+        "tpep_dropoff_datetime",
+        "passenger_count",
+        "trip_distance",
+        "payment_type",
+        "fare_amount",
+        "tip_amount",
+        "total_amount",
+        "pickup_hour",
+        "pickup_day_of_week",
+        "trip_duration_minutes",
+        "trip_speed_mph",
+    ]
+    df = pd.read_parquet(CLEAN_PATH, columns=required_columns)
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
-    st.session_state["taxi_df"] = df
     return df
 
 

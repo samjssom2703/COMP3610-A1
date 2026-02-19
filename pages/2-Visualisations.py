@@ -15,25 +15,6 @@ st.markdown("Use the filters in the sidebar to segment different data by date, h
 
 @st.cache_data
 def load_data():
-    if "taxi_df" in st.session_state:
-        df = st.session_state["taxi_df"].copy()
-        required_columns = [
-            "tpep_pickup_datetime",
-            "tpep_dropoff_datetime",
-            "PULocationID",
-            "payment_type",
-            "fare_amount",
-            "trip_distance",
-            "pickup_hour",
-            "pickup_day_of_week",
-            "pickup_date",
-        ]
-        missing = [column for column in required_columns if column not in df.columns]
-        if missing:
-            st.error(f"Dataset is missing required columns: {missing}")
-            st.stop()
-        return df[required_columns]
-
     if not os.path.exists(CLEAN_PATH):
         st.error("Dataset not ready yet. Open the Home page first to initialize data.")
         st.stop()
@@ -57,16 +38,11 @@ def load_data():
 
 @st.cache_data
 def load_zones():
-    if "zone_df" in st.session_state:
-        return st.session_state["zone_df"]
-
     if not os.path.exists(ZONE_CSV):
         st.error("Zone lookup not ready yet. Open the Home page first to initialize data.")
         st.stop()
 
-    zone_df = pd.read_csv(ZONE_CSV)
-    st.session_state["zone_df"] = zone_df
-    return zone_df
+    return pd.read_csv(ZONE_CSV)
 
 
 df = load_data()

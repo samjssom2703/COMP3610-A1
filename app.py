@@ -114,7 +114,16 @@ def _build_clean_dataset():
 def load_data():
     if not os.path.exists(CLEAN_PATH):
         _build_clean_dataset()
-    df = pd.read_parquet(CLEAN_PATH)
+    required_columns = [
+        "tpep_pickup_datetime",
+        "tpep_dropoff_datetime",
+        "fare_amount",
+        "total_amount",
+        "trip_distance",
+        "trip_duration_minutes",
+        "payment_type",
+    ]
+    df = pd.read_parquet(CLEAN_PATH, columns=required_columns)
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["pickup_date"] = df["tpep_pickup_datetime"].dt.date
@@ -130,11 +139,6 @@ def load_zones():
 
 df = load_data()
 zone_df = load_zones()
-
-if "taxi_df" not in st.session_state:
-    st.session_state["taxi_df"] = df
-if "zone_df" not in st.session_state:
-    st.session_state["zone_df"] = zone_df
 
 
 st.markdown('<p class="main-header">NYC Yellow Taxi Trip Dashboard</p>', unsafe_allow_html=True)
