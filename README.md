@@ -85,18 +85,18 @@ This will generate:
  ```
 
 ## Deployed Dashboard
-**[Live Dashboard Link]**: https://samjssom2703-comp3610-a1-app-jnigrn.streamlit.app/
+**[Live Dashboard Link]**: https://samjssom2703-comp3610-a1-app-tv4glc.streamlit.app/
 Network URL: http://192.168.100.131:8501
 
 
 ## AI Usage Disclosure 
 
 AI was used:
-- Mainly to debug the Streamlit Application Deployment - see github repo commits
-- Also used for recommendations in code segments to fulfil the requirements
-- For assistance with GitHub committing and deleting files
+- Mainly to debug the Streamlit Application Deployment - see github repo commits (Copilot)
+- Also used for recommendations in code segments to fulfil the requirements that I may have missed(Copilot)
+- For assistance with GitHub committing and deleting files (Copilot)
+- Used as well for planning out the structure of how to write the code (ChatGPT)
 
 ## License
 This project is licensed under Samuel Soman, student at the University of the West Indies.
-
 

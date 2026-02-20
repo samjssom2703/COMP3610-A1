@@ -53,9 +53,8 @@ def _build_clean_dataset():
     with st.spinner("First run — downloading raw data (~50 MB)…"):
         _download(TRIP_URL, TRIP_RAW)
         _download(ZONE_URL, ZONE_CSV)
-    with st.spinner("Cleaning & engineering features — this may take a minute…"):
-        # Read only needed columns to save memory
-        needed = [
+    with st.spinner("Cleaning & engineering features."):
+        needed = [                                                          # Read only needed columns to save memory
             "tpep_pickup_datetime", "tpep_dropoff_datetime",
             "PULocationID", "DOLocationID", "passenger_count",
             "trip_distance", "fare_amount", "tip_amount",
