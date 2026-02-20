@@ -13,7 +13,6 @@ st.title("Visualisations Of The Data")
 st.markdown("Use the filters in the sidebar to segment different data by date, hour, and payment type. Each chart will update accordingly, so you can spot patterns across different slices of the data.")
 
 
-@st.cache_data
 def load_data():
     if not os.path.exists(CLEAN_PATH):
         st.error("Dataset not ready yet. Open the Home page first to initialize data.")

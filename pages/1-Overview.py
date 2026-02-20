@@ -11,7 +11,6 @@ st.title("Data Overview")
 st.markdown("Shows you the basics of the dataset used, so you know what you're working with before looking at the visualisations.")
 
 
-@st.cache_data
 def load_data():
     if not os.path.exists(CLEAN_PATH):
         st.error("Dataset not ready yet. Open the Home page first to initialize data.")
