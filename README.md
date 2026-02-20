@@ -86,7 +86,6 @@ This will generate:
 
 ## Deployed Dashboard
 **[Live Dashboard Link]**: https://samjssom2703-comp3610-a1-app-tv4glc.streamlit.app/
-Network URL: http://192.168.100.131:8501
 
 
 ## AI Usage Disclosure 
