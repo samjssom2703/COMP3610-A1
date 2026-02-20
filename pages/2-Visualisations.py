@@ -99,12 +99,17 @@ filtered = df[
     & (df["payment_name"].isin(selected_payments))
 ]
 
+total_trips = len(df)
+filtered_trips = len(filtered)
 
 st.sidebar.divider()
-st.sidebar.metric("Filtered Trips", f"{len(filtered):,}")
-st.sidebar.caption(f"out of {len(df):,} total ({len(filtered)/len(df)*100:.1f}%)")
+metric_col1, metric_col2 = st.sidebar.columns(2)
+metric_col1.metric("Total Trips", f"{total_trips:,}")
+metric_col2.metric("Filtered Trips", f"{filtered_trips:,}")
+if total_trips > 0:
+    st.sidebar.caption(f"Filtered share: {filtered_trips / total_trips * 100:.1f}%")
 
-if len(filtered) == 0:
+if filtered_trips == 0:
     st.warning("No trips match those filters. Try loosening up a bit?")
     st.stop()
 
